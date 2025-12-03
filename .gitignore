@@ -1,0 +1,65 @@
+# ----------------------------
+# Build system
+# ----------------------------
+# CMake build directories
+/build/
+/cmake-build-*/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+
+# ----------------------------
+# Compiled files
+# ----------------------------
+# Object files and compiled libraries
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+
+# ----------------------------
+# Editor/IDE files
+# ----------------------------
+# VSCode
+.vscode/
+
+# CLion
+.idea/
+cmake-build-debug/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# ----------------------------
+# OS-specific files
+# ----------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----------------------------
+# Misc / temporary
+# ----------------------------
+*.log
+*.tmp
+*.swp
+
+# Cache
+.cache
