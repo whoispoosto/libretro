@@ -71,7 +71,7 @@ public:
     glfwSwapBuffers(window_);
   }
 
-  static void MainLoop(std::vector<std::unique_ptr<Window>> &&windows) {
+  static void MainLoop(std::vector<std::unique_ptr<Window>> windows) {
     while (!windows.empty()) {
       glfwPollEvents();
 
@@ -80,7 +80,7 @@ public:
         const auto &win = *it;
 
         if (glfwWindowShouldClose(win->window_)) {
-          windows.erase(it);
+          it = windows.erase(it);
         } else {
           win->render();
           ++it;
@@ -117,7 +117,7 @@ int main(void) {
   const auto cb = []() { glClear(GL_COLOR_BUFFER_BIT); };
 
   const auto cb2 = []() {
-    glClearColor(1, 0, 0, 0.5);
+    glClearColor(1, 0.5, 0, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
   };
 
@@ -126,8 +126,9 @@ int main(void) {
     By definition, static storage cannot be changed (and thus cannot be moved
     from) */
     auto window_list = std::vector<std::unique_ptr<Window>>{};
-    window_list.push_back(std::make_unique<Window>(640, 480, "Hello", cb));
-    window_list.push_back(std::make_unique<Window>(600, 900, "Hello 2", cb2));
+    window_list.emplace_back(std::make_unique<Window>(640, 480, "Hello", cb));
+    window_list.emplace_back(
+        std::make_unique<Window>(600, 900, "Hello 2", cb2));
 
     /* Loop through all windows */
     Window::MainLoop(std::move(window_list));
