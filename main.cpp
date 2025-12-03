@@ -45,7 +45,8 @@ public:
       : window_{std::exchange(other.window_, nullptr)},
         width_{std::exchange(other.width_, 0)},
         height_{std::exchange(other.height_, 0)},
-        title_{std::exchange(other.title_, std::string{})} {}
+        title_{std::exchange(other.title_, std::string{})},
+        callback_{std::exchange(other.callback_, {})} {}
 
   Window &operator=(Window &&other) noexcept {
     if (this != &other) {
