@@ -107,6 +107,7 @@ private:
     std::swap(width_, other.width_);
     std::swap(height_, other.height_);
     std::swap(title_, other.title_);
+    std::swap(callback_, other.callback_);
   }
 };
 
