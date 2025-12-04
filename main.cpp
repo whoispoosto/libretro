@@ -55,9 +55,6 @@ public:
       throw std::runtime_error("Window is nullptr");
     }
 
-    /* Refresh GLFW events */
-    glfwPollEvents();
-
     /* Make the window's context current */
     glfwMakeContextCurrent(window_);
 
@@ -88,6 +85,11 @@ public:
     if (window_count_ == 0) {
       glfwTerminate();
     }
+  }
+
+  static void pollEvents() {
+    /* Refresh GLFW events */
+    glfwPollEvents();
   }
 
   size_t width() const noexcept { return width_; };
@@ -129,6 +131,8 @@ int main(void) {
     windows.emplace_back(600, 900, "Hello World 2", cb2);
 
     while (!windows.empty()) {
+      Window::pollEvents();
+
       auto it = windows.begin();
       while (it != windows.end()) {
         auto &win = *it;
