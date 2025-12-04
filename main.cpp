@@ -72,7 +72,26 @@ public:
     glfwSwapBuffers(window_);
   }
 
-  static void MainLoop(std::vector<std::unique_ptr<Window>> windows) {
+  void loop() {
+    while (!glfwWindowShouldClose(window_)) {
+      glfwPollEvents();
+
+      if (window_count_ != 1) {
+        throw std::runtime_error(
+            "Cannot use member method loop() for more than one window");
+      }
+
+      render();
+    }
+  }
+
+  static void
+  LoopMultipleWindows(std::vector<std::unique_ptr<Window>> windows) {
+    if (window_count_ == 1) {
+      throw std::runtime_error(
+          "Use local method loop() instead since there is only one window");
+    }
+
     while (!windows.empty()) {
       glfwPollEvents();
 
@@ -132,7 +151,7 @@ int main(void) {
         std::make_unique<Window>(600, 900, "Hello 2", cb2));
 
     /* Loop through all windows */
-    Window::MainLoop(std::move(window_list));
+    Window::LoopMultipleWindows(std::move(window_list));
   } catch (const std::exception &e) {
     std::println("Window creation failed: {}", e.what());
   }
