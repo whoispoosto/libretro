@@ -12,8 +12,10 @@ public:
          const std::function<void()> &callback)
       : width_{width}, height_{height}, title_{title}, callback_{callback} {
     /* Initialize the library */
-    if (!glfwInit()) {
-      throw std::runtime_error("Unable to initialize GLFW");
+    if (window_count_ == 0) {
+      if (!glfwInit()) {
+        throw std::runtime_error("Unable to initialize GLFW");
+      }
     }
 
     /* Initialze the GLFW window */
@@ -27,16 +29,7 @@ public:
     ++window_count_;
   }
 
-  ~Window() {
-    if (window_) {
-      glfwDestroyWindow(window_);
-      --window_count_;
-    }
-
-    if (window_count_ == 0) {
-      glfwTerminate();
-    }
-  }
+  ~Window() { destroy(); }
 
   Window(const Window &) = delete;
   Window &operator=(const Window &) = delete;
@@ -62,6 +55,9 @@ public:
       throw std::runtime_error("Window is nullptr");
     }
 
+    /* Refresh GLFW events */
+    glfwPollEvents();
+
     /* Make the window's context current */
     glfwMakeContextCurrent(window_);
 
@@ -72,40 +68,25 @@ public:
     glfwSwapBuffers(window_);
   }
 
-  void loop() {
-    while (!glfwWindowShouldClose(window_)) {
-      glfwPollEvents();
-
-      if (window_count_ != 1) {
-        throw std::runtime_error(
-            "Cannot use member method loop() for more than one window");
-      }
-
-      render();
-    }
+  bool shouldClose() const noexcept {
+    return !window_ || glfwWindowShouldClose(window_);
   }
 
-  static void
-  LoopMultipleWindows(std::vector<std::unique_ptr<Window>> windows) {
-    if (window_count_ == 1) {
-      throw std::runtime_error(
-          "Use local method loop() instead since there is only one window");
+  void destroy() noexcept {
+    /* Do nothing if window_ is nullptr */
+    if (!window_) {
+      return;
     }
 
-    while (!windows.empty()) {
-      glfwPollEvents();
+    glfwDestroyWindow(window_);
+    window_ = nullptr;
 
-      auto it = windows.begin();
-      while (it != windows.end()) {
-        const auto &win = *it;
+    /* Decrement window count */
+    --window_count_;
 
-        if (glfwWindowShouldClose(win->window_)) {
-          it = windows.erase(it);
-        } else {
-          win->render();
-          ++it;
-        }
-      }
+    /* Terminate GLFW if all windows have been destroyed */
+    if (window_count_ == 0) {
+      glfwTerminate();
     }
   }
 
@@ -142,18 +123,26 @@ int main(void) {
   };
 
   try {
-    /* Cannot use initializer list since that is for static storage only
-    By definition, static storage cannot be changed (and thus cannot be moved
-    from) */
-    auto window_list = std::vector<std::unique_ptr<Window>>{};
-    window_list.emplace_back(std::make_unique<Window>(640, 480, "Hello", cb));
-    window_list.emplace_back(
-        std::make_unique<Window>(600, 900, "Hello 2", cb2));
+    std::vector<Window> windows{};
 
-    /* Loop through all windows */
-    Window::LoopMultipleWindows(std::move(window_list));
+    windows.emplace_back(640, 480, "Hello World", cb);
+    windows.emplace_back(600, 900, "Hello World 2", cb2);
+
+    while (!windows.empty()) {
+      auto it = windows.begin();
+      while (it != windows.end()) {
+        auto &win = *it;
+
+        if (win.shouldClose()) {
+          it = windows.erase(it);
+        } else {
+          win.render();
+          ++it;
+        }
+      }
+    }
   } catch (const std::exception &e) {
-    std::println("Window creation failed: {}", e.what());
+    std::println("Window failure: {}", e.what());
   }
 
   return 0;
