@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <functional>
+#include <glad/glad.h>
 #include <string>
 
 class Window {

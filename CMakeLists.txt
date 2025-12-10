@@ -9,8 +9,14 @@ add_executable(bin main.cpp window.cpp)    # Create an executable target named M
 
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(glad REQUIRED)
 
 target_link_libraries(bin PRIVATE 
   glfw
-  OpenGL::GL
+  OpenGL::GL,
+  glad
 )
+
+add_definitions(-DGL_SILENCE_DEPRECATION)
+
+
