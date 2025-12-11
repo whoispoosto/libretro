@@ -1,4 +1,6 @@
 #include "window.h"
+#include <print>
+#include <stdexcept>
 
 size_t Window::window_count_ = 0;
 
@@ -10,6 +12,11 @@ Window::Window(size_t width, size_t height, const std::string &title,
     if (!glfwInit()) {
       throw std::runtime_error("Unable to initialize GLFW");
     }
+
+    // TODO: throw these values in some config file?
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   }
 
   /* Initialze the GLFW window */
@@ -48,6 +55,11 @@ void Window::render() {
 
   /* Make the window's context current */
   glfwMakeContextCurrent(window_);
+
+  /* Load OpenGL functions */
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    throw std::runtime_error("Unable to initialize GLAD");
+  }
 
   /* OpenGL rendering */
   callback_();
