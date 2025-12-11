@@ -19,23 +19,39 @@ const char *fragmentShaderSource =
     "}\0";
 
 int main(void) {
-  const auto cb = []() { glClear(GL_COLOR_BUFFER_BIT); };
+  const auto init_cb = []() {
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    /* Bind vertex array before modifying any of its buffers/features */
+    glBindVertexArray(VAO);
+
+    /* Bind vertex data to buffer */
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    /* Set VAO attributes */
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          static_cast<void *>(0));
+    glEnableVertexAttribArray(0);
+
+    /* Unbind for cleanup */
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  };
+
+  const auto render_cb = []() { glClear(GL_COLOR_BUFFER_BIT); };
 
   try {
-    Window win{640, 480, "Hello World", cb};
-
-    // unsigned int VBO;
-    // glGenBuffers(1, &VBO);
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
-    // GL_STATIC_DRAW);
+    Window win{640, 480, "Hello World", init_cb, render_cb};
 
     // unsigned int VAO;
     // glGenVertexArrays(1, &VAO);
     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
     //                       (void *)0);
     // glEnableVertexAttribArray(0);
-
+    //
     // unsigned int vertexShader;
     // vertexShader = glCreateShader(GL_VERTEX_SHADER);
     // glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);

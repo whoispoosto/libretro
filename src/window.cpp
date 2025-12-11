@@ -1,12 +1,12 @@
 #include "window.h"
-#include <print>
 #include <stdexcept>
 
 size_t Window::window_count_ = 0;
 
 Window::Window(size_t width, size_t height, const std::string &title,
-               const std::function<void()> &callback)
-    : width_{width}, height_{height}, title_{title}, callback_{callback} {
+               const std::function<void()> &init_cb,
+               const std::function<void()> &render_cb)
+    : width_{width}, height_{height}, title_{title}, render_cb_{render_cb} {
   /* Initialize the library */
   if (window_count_ == 0) {
     if (!glfwInit()) {
@@ -26,6 +26,10 @@ Window::Window(size_t width, size_t height, const std::string &title,
     throw std::runtime_error("Unable to create GLFW window");
   }
 
+  /* Run initialization callback on this window context */
+  load_context();
+  init_cb();
+
   /* Increment global window count */
   ++window_count_;
 }
@@ -37,7 +41,7 @@ Window::Window(Window &&other) noexcept
       width_{std::exchange(other.width_, 0)},
       height_{std::exchange(other.height_, 0)},
       title_{std::exchange(other.title_, std::string{})},
-      callback_{std::exchange(other.callback_, {})} {}
+      render_cb_{std::exchange(other.render_cb_, {})} {}
 
 Window &Window::operator=(Window &&other) noexcept {
   if (this != &other) {
@@ -53,16 +57,9 @@ void Window::render() {
     throw std::runtime_error("Window is nullptr");
   }
 
-  /* Make the window's context current */
-  glfwMakeContextCurrent(window_);
-
-  /* Load OpenGL functions */
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    throw std::runtime_error("Unable to initialize GLAD");
-  }
-
   /* OpenGL rendering */
-  callback_();
+  load_context();
+  render_cb_();
 
   /* Swap front and back buffers */
   glfwSwapBuffers(window_);
@@ -104,5 +101,15 @@ void Window::swap(Window &other) {
   std::swap(width_, other.width_);
   std::swap(height_, other.height_);
   std::swap(title_, other.title_);
-  std::swap(callback_, other.callback_);
+  std::swap(render_cb_, other.render_cb_);
+}
+
+void Window::load_context() {
+  /* Make the window's context current */
+  glfwMakeContextCurrent(window_);
+
+  /* Load OpenGL functions */
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    throw std::runtime_error("Unable to initialize GLAD");
+  }
 }

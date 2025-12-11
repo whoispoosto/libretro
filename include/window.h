@@ -10,7 +10,8 @@
 class Window {
 public:
   Window(size_t width, size_t height, const std::string &title,
-         const std::function<void()> &callback);
+         const std::function<void()> &init_cb,
+         const std::function<void()> &render_cb);
 
   ~Window();
 
@@ -37,9 +38,10 @@ private:
   size_t width_{};
   size_t height_{};
   std::string title_{};
-  std::function<void()> callback_{};
+  std::function<void()> render_cb_{};
 
   static size_t window_count_;
 
   void swap(Window &other);
+  void load_context();
 };
