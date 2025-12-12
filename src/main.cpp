@@ -43,7 +43,7 @@ int main(void) {
 
     /* Create vertex shader */
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
 
     /* Create fragment shader */
@@ -63,7 +63,6 @@ int main(void) {
   };
 
   const auto render_cb = [&]() {
-    // std::println("Shader program: {}", shaderProgram);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
