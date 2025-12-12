@@ -4,7 +4,11 @@ project(MyProject VERSION 1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 
 # Add source files
 file(GLOB SRC_FILES src/*.cpp src/*.c)
@@ -24,6 +28,7 @@ target_link_libraries(bin PRIVATE
 )
 
 add_definitions(-DGL_SILENCE_DEPRECATION -DGLFW_INCLUDE_NONE)
+
 
 
 

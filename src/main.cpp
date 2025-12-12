@@ -21,7 +21,7 @@ const char *fragmentShaderSource =
 int main(void) {
   unsigned int VAO, VBO, vertexShader, fragmentShader, shaderProgram;
 
-  const auto init_cb = [&]() {
+  const auto init_cb = [&]() noexcept {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -62,7 +62,7 @@ int main(void) {
     glDeleteShader(fragmentShader);
   };
 
-  const auto render_cb = [&]() {
+  const auto render_cb = [&]() noexcept {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
