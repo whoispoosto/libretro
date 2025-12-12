@@ -17,13 +17,27 @@ class Window {
   public:
     NoExceptFunctor() = default;
 
+    /* The underlying functor must be noexcept.
+     * R must be default constructible (or void) so operator() can return
+     * a default value when called on an empty functor. */
     template <typename F>
-      requires std::is_nothrow_invocable_r_v<R, F, Args...>
+      requires std::is_nothrow_invocable_r_v<R, F, Args...> &&
+               (std::is_default_constructible_v<R> || std::is_void_v<R>)
     NoExceptFunctor(F &&f) : functor_{std::forward<F>(f)} {}
 
-    operator std::function<R(Args...)>() const noexcept { return functor_; }
-    operator bool() const noexcept { return static_cast<bool>(functor_); }
-    void operator()() const noexcept { return functor_(); }
+    explicit operator bool() const noexcept {
+      return static_cast<bool>(functor_);
+    }
+
+    R operator()(Args... args) const noexcept {
+      if constexpr (std::is_void_v<R>) {
+        if (functor_) {
+          functor_(std::forward<Args>(args)...);
+        }
+      } else {
+        return functor_ ? functor_(std::forward<Args>(args)...) : R{};
+      }
+    }
 
   private:
     std::function<R(Args...)> functor_{};
