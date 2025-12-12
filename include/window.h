@@ -19,11 +19,21 @@ class Window {
 
     /* The underlying functor must be noexcept.
      * R must be default constructible (or void) so operator() can return
-     * a default value when called on an empty functor. */
+     * a default value when called on an empty functor. Also, the is_same_v
+     * check prevents infinite recursion when trying to copy construct
+     * (forwarding constructor is considered a better match than copy
+     * constructor lol)*/
     template <typename F>
-      requires std::is_nothrow_invocable_r_v<R, F, Args...> &&
-               (std::is_default_constructible_v<R> || std::is_void_v<R>)
+      requires(!std::is_same_v<std::decay_t<F>, NoExceptFunctor>) &&
+              std::is_nothrow_invocable_r_v<R, F, Args...> &&
+              (std::is_default_constructible_v<R> || std::is_void_v<R>)
     NoExceptFunctor(F &&f) : functor_{std::forward<F>(f)} {}
+
+    ~NoExceptFunctor() = default;
+    NoExceptFunctor(const NoExceptFunctor &other) = delete;
+    NoExceptFunctor &operator=(const NoExceptFunctor &) = delete;
+    NoExceptFunctor(NoExceptFunctor &&other) = default;
+    NoExceptFunctor &operator=(NoExceptFunctor &&) = default;
 
     explicit operator bool() const noexcept {
       return static_cast<bool>(functor_);
