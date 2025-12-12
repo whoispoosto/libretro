@@ -5,10 +5,11 @@ size_t Window::window_count_ = 0;
 
 Window::Window(size_t width, size_t height, const std::string &title,
                const std::function<void()> &init_cb,
-               const std::function<void()> &render_cb,
-               const std::function<void()> &cleanup_cb)
-    : width_{width}, height_{height}, title_{title}, render_cb_{render_cb},
-      cleanup_cb_{cleanup_cb} {
+               std::function<void()> render_cb,
+               std::function<void()> cleanup_cb)
+    : width_{width}, height_{height}, title_{title},
+      render_cb_{std::move(render_cb)}, cleanup_cb_{std::move(cleanup_cb)} {
+
   /* Initialize the library */
   if (window_count_ == 0) {
     if (!glfwInit()) {

@@ -9,11 +9,9 @@
 
 class Window {
 public:
-  // TODO: make std::functions noexcept, i.e., <void() noexcept>
   Window(size_t width, size_t height, const std::string &title,
-         const std::function<void()> &init_cb,
-         const std::function<void()> &render_cb,
-         const std::function<void()> &cleanup_cb);
+         const std::function<void()> &init_cb, std::function<void()> render_cb,
+         std::function<void()> cleanup_cb);
 
   ~Window();
 

@@ -71,7 +71,7 @@ int main(void) {
     glDrawArrays(GL_TRIANGLES, 0, 3);
   };
 
-  const auto cleanup_cb = [&]() {
+  const auto cleanup_cb = [&]() noexcept {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteProgram(shaderProgram);
