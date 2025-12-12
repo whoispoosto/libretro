@@ -5,8 +5,10 @@ size_t Window::window_count_ = 0;
 
 Window::Window(size_t width, size_t height, const std::string &title,
                const std::function<void()> &init_cb,
-               const std::function<void()> &render_cb)
-    : width_{width}, height_{height}, title_{title}, render_cb_{render_cb} {
+               const std::function<void()> &render_cb,
+               const std::function<void()> &cleanup_cb)
+    : width_{width}, height_{height}, title_{title}, render_cb_{render_cb},
+      cleanup_cb_{cleanup_cb} {
   /* Initialize the library */
   if (window_count_ == 0) {
     if (!glfwInit()) {
@@ -27,8 +29,15 @@ Window::Window(size_t width, size_t height, const std::string &title,
   }
 
   /* Run initialization callback on this window context */
-  load_context();
-  init_cb();
+  if (!load_context()) {
+    glfwDestroyWindow(window_);
+    window_ = nullptr;
+    throw std::runtime_error("Unable to load GL context");
+  }
+
+  if (init_cb) {
+    init_cb();
+  }
 
   /* Increment global window count */
   ++window_count_;
@@ -39,9 +48,9 @@ Window::~Window() { destroy(); }
 Window::Window(Window &&other) noexcept
     : window_{std::exchange(other.window_, nullptr)},
       width_{std::exchange(other.width_, 0)},
-      height_{std::exchange(other.height_, 0)},
-      title_{std::exchange(other.title_, std::string{})},
-      render_cb_{std::exchange(other.render_cb_, {})} {}
+      height_{std::exchange(other.height_, 0)}, title_{std::move(other.title_)},
+      render_cb_{std::move(other.render_cb_)},
+      cleanup_cb_{std::move(other.cleanup_cb_)} {}
 
 Window &Window::operator=(Window &&other) noexcept {
   if (this != &other) {
@@ -58,8 +67,13 @@ void Window::render() {
   }
 
   /* OpenGL rendering */
-  load_context();
-  render_cb_();
+  if (!load_context()) {
+    throw std::runtime_error("Unable to load GL context");
+  }
+
+  if (render_cb_) {
+    render_cb_();
+  }
 
   /* Swap front and back buffers */
   glfwSwapBuffers(window_);
@@ -73,6 +87,11 @@ void Window::destroy() noexcept {
   /* Do nothing if window_ is nullptr */
   if (!window_) {
     return;
+  }
+
+  /* Call custom cleanup code */
+  if (cleanup_cb_ && load_context()) {
+    cleanup_cb_();
   }
 
   glfwDestroyWindow(window_);
@@ -94,7 +113,7 @@ void Window::pollEvents() noexcept {
 
 size_t Window::width() const noexcept { return width_; };
 size_t Window::height() const noexcept { return height_; };
-std::string Window::title() const noexcept { return title_; }
+std::string_view Window::title() const noexcept { return title_; }
 
 void Window::swap(Window &other) {
   std::swap(window_, other.window_);
@@ -102,14 +121,14 @@ void Window::swap(Window &other) {
   std::swap(height_, other.height_);
   std::swap(title_, other.title_);
   std::swap(render_cb_, other.render_cb_);
+  std::swap(cleanup_cb_, other.cleanup_cb_);
 }
 
-void Window::load_context() {
+bool Window::load_context() noexcept {
   /* Make the window's context current */
   glfwMakeContextCurrent(window_);
 
-  /* Load OpenGL functions */
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    throw std::runtime_error("Unable to initialize GLAD");
-  }
+  /* Load OpenGL functions
+   * Returns 0 on failure and non-zero on success */
+  return gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 }

@@ -9,9 +9,11 @@
 
 class Window {
 public:
+  // TODO: make std::functions noexcept, i.e., <void() noexcept>
   Window(size_t width, size_t height, const std::string &title,
          const std::function<void()> &init_cb,
-         const std::function<void()> &render_cb);
+         const std::function<void()> &render_cb,
+         const std::function<void()> &cleanup_cb);
 
   ~Window();
 
@@ -31,17 +33,18 @@ public:
 
   size_t width() const noexcept;
   size_t height() const noexcept;
-  std::string title() const noexcept;
+  std::string_view title() const noexcept;
 
 private:
   GLFWwindow *window_{};
   size_t width_{};
   size_t height_{};
-  std::string title_{};
+  std::string title_;
   std::function<void()> render_cb_{};
+  std::function<void()> cleanup_cb_{};
 
   static size_t window_count_;
 
   void swap(Window &other);
-  void load_context();
+  bool load_context() noexcept;
 };

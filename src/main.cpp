@@ -71,8 +71,14 @@ int main(void) {
     glDrawArrays(GL_TRIANGLES, 0, 3);
   };
 
+  const auto cleanup_cb = [&]() {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
+  };
+
   try {
-    Window win{640, 480, "Hello World", init_cb, render_cb};
+    Window win{640, 480, "Hello World", init_cb, render_cb, cleanup_cb};
 
     while (!win.shouldClose()) {
       Window::pollEvents();
