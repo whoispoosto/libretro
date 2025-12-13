@@ -10,13 +10,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 
-# Add source files
-file(GLOB SRC_FILES src/*.cpp src/*.c)
+# TODO: Get rid of GLOB and switch to add_executable
+file(GLOB SRC_FILES src/*.cpp src/*.c external/*/*.c)
 
 add_executable(bin ${SRC_FILES})
 
-# Include directory for headers
-target_include_directories(bin PRIVATE include)
+# Include directories - add external/glad and external/KHR separately
+target_include_directories(bin PRIVATE 
+    include 
+    external
+)
 
 # Dependencies
 find_package(glfw3 REQUIRED)
@@ -25,10 +28,11 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(bin PRIVATE
     glfw
     OpenGL::GL
+    ${CMAKE_DL_LIBS}  # Required for GLAD on Linux
 )
 
-add_definitions(-DGL_SILENCE_DEPRECATION -DGLFW_INCLUDE_NONE)
-
-
-
-
+# Use target_compile_definitions instead of add_definitions
+target_compile_definitions(bin PRIVATE 
+    GL_SILENCE_DEPRECATION 
+    GLFW_INCLUDE_NONE
+)

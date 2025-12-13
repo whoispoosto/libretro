@@ -1,0 +1,12 @@
+# Mark vendor/third-party code as vendored (won't count toward language stats)
+vendor/** linguist-vendored
+third_party/** linguist-vendored
+external/** linguist-vendored
+libs/** linguist-vendored
+
+# If GLAD is in a specific directory
+glad/** linguist-vendored
+
+*.cpp linguist-language=C++
+*.h linguist-language=C++
+*.hpp linguist-language=C++
