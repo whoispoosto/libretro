@@ -7,6 +7,7 @@
 #include <functional>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 class Window {
   // TODO: have callbacks be std::move_only_function once clang supports it
