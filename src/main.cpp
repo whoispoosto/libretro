@@ -1,7 +1,17 @@
 #include "window.h"
 #include <print>
 
-float vertices[] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
+float vertices[] = {
+    0.5f,  0.5f,  0.0f, // top right
+    0.5f,  -0.5f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, // bottom left
+    -0.5f, 0.5f,  0.0f  // top left
+};
+unsigned int indices[] = {
+    // note that we start from 0!
+    0, 1, 3, // first triangle
+    1, 2, 3  // second triangle
+};
 const char *vertexShaderSource =
     "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -19,18 +29,24 @@ const char *fragmentShaderSource =
     "}\0";
 
 int main(void) {
-  unsigned int VAO, VBO, vertexShader, fragmentShader, shaderProgram;
+  unsigned int VAO, VBO, EBO, vertexShader, fragmentShader, shaderProgram;
 
   const auto init_cb = [&]() noexcept {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     /* Bind vertex array before modifying any of its buffers/features */
     glBindVertexArray(VAO);
 
-    /* Bind vertex data to buffer */
+    /* Bind vertex buffer object to vertex array object */
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    /* Bind element buffer object to VAO */
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+                 GL_STATIC_DRAW);
 
     /* Set VAO attributes */
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
@@ -38,8 +54,10 @@ int main(void) {
     glEnableVertexAttribArray(0);
 
     /* Unbind for cleanup */
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glDisableVertexAttribArray(0);
 
     /* Create vertex shader */
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -68,12 +86,13 @@ int main(void) {
 
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   };
 
   const auto cleanup_cb = [&]() noexcept {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgram);
   };
 
