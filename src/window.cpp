@@ -3,7 +3,7 @@
 
 size_t Window::window_count_ = 0;
 
-Window::Window(size_t width, size_t height, const std::string &title,
+Window::Window(size_t width, size_t height, std::string_view title,
                const NoExceptFunctor<void()> &init_cb,
                NoExceptFunctor<void()> render_cb,
                NoExceptFunctor<void()> cleanup_cb)

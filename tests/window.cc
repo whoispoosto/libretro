@@ -3,15 +3,14 @@
 #include "window.h"
 
 #include <stdexcept>
-#include <string>
 
 // ---------------------------------------------------------------------------
 // Helper: create a window with no-op callbacks
 // ---------------------------------------------------------------------------
 static Window makeWindow(size_t w = 800, size_t h = 600,
-                         const std::string &title = "Test") {
-  return Window(
-      w, h, title, []() noexcept {}, []() noexcept {}, []() noexcept {});
+                         std::string_view title = "Test") {
+  return Window{
+      w, h, title, []() noexcept {}, []() noexcept {}, []() noexcept {}};
 }
 
 // ---------------------------------------------------------------------------
@@ -37,17 +36,23 @@ TEST(WindowAccessors, Title) {
 // ---------------------------------------------------------------------------
 TEST(WindowCallbacks, InitCallbackIsCalled) {
   bool called = false;
-  Window w(
-      800, 600, "Test", [&called]() noexcept { called = true; },
-      []() noexcept {}, []() noexcept {});
+  Window w{800,
+           600,
+           "Test",
+           [&called]() noexcept { called = true; },
+           []() noexcept {},
+           []() noexcept {}};
   EXPECT_TRUE(called);
 }
 
 TEST(WindowCallbacks, RenderCallbackIsCalled) {
   bool called = false;
-  Window w(
-      800, 600, "Test", []() noexcept {},
-      [&called]() noexcept { called = true; }, []() noexcept {});
+  Window w{800,
+           600,
+           "Test",
+           []() noexcept {},
+           [&called]() noexcept { called = true; },
+           []() noexcept {}};
   w.render();
   EXPECT_TRUE(called);
 }
@@ -55,27 +60,36 @@ TEST(WindowCallbacks, RenderCallbackIsCalled) {
 TEST(WindowCallbacks, CleanupCallbackCalledOnScopeExit) {
   bool called = false;
   {
-    Window w(
-        800, 600, "Test", []() noexcept {}, []() noexcept {},
-        [&called]() noexcept { called = true; });
+    Window w{800,
+             600,
+             "Test",
+             []() noexcept {},
+             []() noexcept {},
+             [&called]() noexcept { called = true; }};
   }
   EXPECT_TRUE(called);
 }
 
 TEST(WindowCallbacks, CleanupCallbackCalledOnExplicitDestroy) {
   bool called = false;
-  Window w(
-      800, 600, "Test", []() noexcept {}, []() noexcept {},
-      [&called]() noexcept { called = true; });
+  Window w{800,
+           600,
+           "Test",
+           []() noexcept {},
+           []() noexcept {},
+           [&called]() noexcept { called = true; }};
   w.destroy();
   EXPECT_TRUE(called);
 }
 
 TEST(WindowCallbacks, RenderCallbackNotCalledBeforeRender) {
   bool called = false;
-  Window w(
-      800, 600, "Test", []() noexcept {},
-      [&called]() noexcept { called = true; }, []() noexcept {});
+  Window w{800,
+           600,
+           "Test",
+           []() noexcept {},
+           [&called]() noexcept { called = true; },
+           []() noexcept {}};
   EXPECT_FALSE(called);
 }
 
@@ -108,9 +122,12 @@ TEST(WindowLifecycle, RenderOnDestroyedWindowThrows) {
 
 TEST(WindowLifecycle, RenderCanBeCalledMultipleTimes) {
   int count = 0;
-  Window w(
-      800, 600, "Test", []() noexcept {}, [&count]() noexcept { ++count; },
-      []() noexcept {});
+  Window w{800,
+           600,
+           "Test",
+           []() noexcept {},
+           [&count]() noexcept { ++count; },
+           []() noexcept {}};
   w.render();
   w.render();
   w.render();
@@ -122,7 +139,7 @@ TEST(WindowLifecycle, RenderCanBeCalledMultipleTimes) {
 // ---------------------------------------------------------------------------
 TEST(WindowMove, MoveConstructorTransfersState) {
   auto w1 = makeWindow(800, 600, "Original");
-  Window w2(std::move(w1));
+  Window w2{std::move(w1)};
 
   EXPECT_TRUE(w1.shouldClose());
   EXPECT_FALSE(w2.shouldClose());
@@ -145,10 +162,13 @@ TEST(WindowMove, MoveAssignmentTransfersState) {
 
 TEST(WindowMove, MoveConstructorTransfersRenderCallback) {
   bool called = false;
-  Window w1(
-      800, 600, "Test", []() noexcept {},
-      [&called]() noexcept { called = true; }, []() noexcept {});
-  Window w2(std::move(w1));
+  Window w1{800,
+            600,
+            "Test",
+            []() noexcept {},
+            [&called]() noexcept { called = true; },
+            []() noexcept {}};
+  Window w2{std::move(w1)};
   w2.render();
   EXPECT_TRUE(called);
 }
@@ -156,10 +176,13 @@ TEST(WindowMove, MoveConstructorTransfersRenderCallback) {
 TEST(WindowMove, MoveConstructorTransfersCleanupCallback) {
   bool called = false;
   {
-    Window w1(
-        800, 600, "Test", []() noexcept {}, []() noexcept {},
-        [&called]() noexcept { called = true; });
-    Window w2(std::move(w1));
+    Window w1{800,
+              600,
+              "Test",
+              []() noexcept {},
+              []() noexcept {},
+              [&called]() noexcept { called = true; }};
+    Window w2{std::move(w1)};
   }
   EXPECT_TRUE(called);
 }
@@ -187,13 +210,19 @@ TEST(WindowMultiple, TwoWindowsCanCoexist) {
 TEST(WindowMultiple, WindowsCleanUpIndependently) {
   bool cleanup1 = false, cleanup2 = false;
   {
-    Window w1(
-        800, 600, "W1", []() noexcept {}, []() noexcept {},
-        [&cleanup1]() noexcept { cleanup1 = true; });
+    Window w1{800,
+              600,
+              "W1",
+              []() noexcept {},
+              []() noexcept {},
+              [&cleanup1]() noexcept { cleanup1 = true; }};
     {
-      Window w2(
-          400, 300, "W2", []() noexcept {}, []() noexcept {},
-          [&cleanup2]() noexcept { cleanup2 = true; });
+      Window w2{400,
+                300,
+                "W2",
+                []() noexcept {},
+                []() noexcept {},
+                [&cleanup2]() noexcept { cleanup2 = true; }};
     }
     EXPECT_TRUE(cleanup2);
     EXPECT_FALSE(cleanup1);

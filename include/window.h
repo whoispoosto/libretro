@@ -6,6 +6,7 @@
 // clang-format on
 #include <functional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -55,7 +56,7 @@ class Window {
   };
 
 public:
-  Window(size_t width, size_t height, const std::string &title,
+  Window(size_t width, size_t height, std::string_view title,
          const NoExceptFunctor<void()> &init_cb,
          NoExceptFunctor<void()> render_cb, NoExceptFunctor<void()> cleanup_cb);
 
