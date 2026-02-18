@@ -55,11 +55,25 @@ file(GLOB TEST_SOURCES "tests/*.cc")
 add_executable(
   libretro_tests
   ${TEST_SOURCES}
+  src/window.cpp
+  external/glad/glad.c
 )
 
-target_link_libraries(
-  libretro_tests
-  GTest::gtest_main
+target_include_directories(libretro_tests PRIVATE
+    include
+    external
+)
+
+target_compile_definitions(libretro_tests PRIVATE
+    GL_SILENCE_DEPRECATION
+    GLFW_INCLUDE_NONE
+)
+
+target_link_libraries(libretro_tests PRIVATE
+    GTest::gtest_main
+    glfw
+    OpenGL::GL
+    ${CMAKE_DL_LIBS}
 )
 
 include(GoogleTest)
